@@ -1,0 +1,88 @@
+
+Scene = World 🌍
+Camera = Eyes 👀
+Renderer = Painter 🖌️
+Geometry = Shape 📦
+Material = Look/Color 🎨
+Mesh = Geometry + Material (object)
+Light = Illumination 💡
+Controls = Mouse interaction 🎮
+Animation Loop = Continuous rendering 🔄
+
+
+
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+// // 🎬 Scene -> The 3D world where all objects live
+// // Scene ek container hota hai jisme hum saare 3D objects, lights, aur camera add karte hain
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000); // Black background (jaise dark sky)
+
+// // 🎥 Camera -> Eye of the viewer (decides what part of the scene we can see)
+// // PerspectiveCamera -> gives depth effect (objects far away look smaller)
+// // camera ek aankh ki tarah kaam karta hai, jo scene ke kis angle aur kitne area ko dekhega
+const camera = new THREE.PerspectiveCamera(
+  75,                            // Field of View (kitna area dekhna hai)
+  window.innerWidth / window.innerHeight, // Aspect ratio (screen ratio)
+  0.1,                           // Near clipping plane
+  1000                           // Far clipping plane
+);
+camera.position.z = 3; // camera ko thoda door le gaye
+
+// // 🖥️ Renderer -> Draws everything on the screen (converts 3D -> 2D for display)
+// // Renderer woh paintbrush hai jo scene ko canvas (browser) pe draw karta hai
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// // 📦 Mesh -> Combination of Geometry (shape) + Material (appearance)
+// // Geometry = cube ka shape, Material = uska rang / texture
+// // Mesh = 3D object (jo scene me dikhai dega)
+const geometry = new THREE.BoxGeometry(); // cube shape
+
+// Changed material to a very bright, almost white, slightly greenish color
+const material = new THREE.MeshStandardMaterial({ color: 0xFFA500 }); // cube color
+const cube = new THREE.Mesh(geometry, material);
+scene.add(cube); // add cube in world
+
+// Add cube edges with a different, contrasting color (e.g., magenta)
+const edges = new THREE.EdgesGeometry(geometry);
+const line = new THREE.LineSegments(
+  edges,
+  new THREE.LineBasicMaterial({ color: 0xFFB000}) // Bright magenta edges
+);
+cube.add(line); // Add the edges to the cube
+
+// // ✨ Lights -> Without light, material won't look 3D (sab black lagega)
+// // Lights = scene ke bulbs/lamps jo object ko dikhate hain
+const light = new THREE.PointLight(0xFFD700, 1); // ek jagah se light
+light.position.set(5, 5, 5); // light ki position
+scene.add(light);
+
+const ambient = new THREE.AmbientLight(0xD4AF37, 1.2); // halka background light
+scene.add(ambient);
+
+// // 🎮 Controls -> Allows user to rotate/zoom with mouse
+// // OrbitControls se camera ko freely move karke object ghooma sakte hain
+const controls = new OrbitControls(camera, renderer.domElement);
+
+// // 🔄 Resize Handling -> jab window resize ho, camera aur renderer adjust ho jaye
+// // warna scene distort ho sakta hai
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight; // update camera view
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// // 🎞️ Animation Loop -> Keeps rendering frames continuously (like a movie)
+// // requestAnimationFrame = ek loop jo har frame pe update hota hai
+// // isme hum animations (rotation, movement) likhte hain
+function animate() {
+  requestAnimationFrame(animate); // infinite loop banata hai
+  cube.rotation.x += 0.01; // cube ko thoda thoda ghumao X axis pe
+  cube.rotation.y += 0.01; // cube ko thoda thoda ghumao Y axis pe
+  controls.update(); // controls ko update karo
+  renderer.render(scene, camera); // scene ko render karke screen pe dikhado
+}
+animate();
